@@ -6,9 +6,7 @@ import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.List;
 
 @Entity
@@ -17,10 +15,7 @@ public class Product {
 
     @Id
     @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Getter
     private String id;
 
@@ -51,8 +46,7 @@ public class Product {
     private String category;
 
     @Getter
-    @Setter
-    private OffsetDateTime created_at;
+    private LocalDateTime createdAt;
 
     public String getTagArray() {
         return tagArray;
@@ -62,12 +56,12 @@ public class Product {
         this.tagArray = tagArray;
     }
 
-    public OffsetDateTime getCreated_at() {
-        return created_at;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreated_at(OffsetDateTime created_at) {
-        this.created_at = created_at;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public String getName() {

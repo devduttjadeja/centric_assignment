@@ -5,13 +5,14 @@ import com.centric.product.model.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 @RestController
 public class ProductController {
@@ -20,25 +21,45 @@ public class ProductController {
     @Autowired
     private ProductDAO productDAO;
 
-    @PostMapping("/saveProduct")
+    @PostMapping("/save/product")
+    @Transactional
     public ResponseEntity<Product> saveProduct(@RequestBody Product product) {
 
-        String tags = String.join(",", product.getTags());
-        product.setTagArray(tags);
-
-        /*
-        1. LocalDateTime.now() -> 2021-11-10T21:44:35.743560500
-        2. LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS) -> 2021-11-10T21:45:13
-        3. OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS) -> 2021-11-10T21:46:07-05:00
-        4. OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS) -> 2021-11-11T02:35:07Z
-
-        Using 4. as it matches the desciprion in the document
-        */
-        product.setCreated_at(OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS));
+        try {
+            String tags = String.join(",", product.getTags());
+            product.setTagArray(tags);
+            product.setCreatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
 
         productDAO.save(product);
 
-        return new ResponseEntity<>(product, HttpStatus.OK);
+        return new ResponseEntity<>(product, HttpStatus.CREATED);
+    }
+
+
+    @GetMapping("/search/{category}")
+    public ResponseEntity<List<Product>> searchByCategory(@PathVariable String category) {
+
+        List<Product> products;
+        try {
+
+            products = productDAO.findByCategory(category);
+
+            products.forEach(product -> {
+                List<String> tags = Arrays.asList(product.getTagArray().split(","));
+                product.setTags(tags);
+            });
+
+            products.sort(Comparator.comparing(Product::getCreatedAt).reversed());
+
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+
+        return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
 
