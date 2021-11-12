@@ -21,7 +21,7 @@ public class ProductController {
     @Autowired
     private ProductDAO productDAO;
 
-    @PostMapping("/save/product")
+    @PostMapping("/v1/products/save")
     @Transactional
     public ResponseEntity<Product> saveProduct(@RequestBody Product product) {
 
@@ -39,7 +39,7 @@ public class ProductController {
     }
 
 
-    @GetMapping("/search/{category}")
+    @GetMapping("/v1/products/search/{category}")
     public ResponseEntity<List<Product>> searchByCategory(@PathVariable String category) {
 
         List<Product> products;
